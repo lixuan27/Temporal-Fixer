@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Temporal Fixer</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #0b0e14; color: #e6edf3;
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 64px 20px 80px; }
+  h1 { font-size: 2.2rem; font-weight: 700; margin: 0 0 6px; letter-spacing: -.02em; }
+  .tag { color: #9fb0c0; font-size: 1.05rem; margin: 0 0 4px; }
+  .tag b { color: #e6edf3; }
+  .facts { color: #7d8ea0; font-size: .92rem; margin: 14px 0 40px; }
+  .facts span { color: #3fb950; font-weight: 600; }
+  figure { margin: 0 0 34px; }
+  video {
+    width: 100%; display: block; border-radius: 10px;
+    border: 1px solid #222c3a; background: #000;
+  }
+  figcaption { color: #7d8ea0; font-size: .86rem; margin-top: 8px; }
+  a { color: #58a6ff; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  footer { color: #59667a; font-size: .85rem; margin-top: 44px; border-top: 1px solid #1b2430; padding-top: 20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Temporal Fixer</h1>
+  <p class="tag"><b>Image edits, video fixes.</b> Run any image editor frame-by-frame, then remove the flicker.</p>
+  <p class="facts">
+    <span>&minus;87%</span> end-to-end flicker &nbsp;·&nbsp; zero paired edit data &nbsp;·&nbsp; single step &nbsp;·&nbsp; editor-agnostic
+  </p>
+
+  <figure>
+    <video src="assets/compare_ukiyoe.mp4" autoplay loop muted playsinline preload="metadata"></video>
+    <figcaption>Left: source &nbsp;·&nbsp; Middle: per-frame edit (flickers) &nbsp;·&nbsp; Right: ours (temporally fixed) — Ukiyo-e style.</figcaption>
+  </figure>
+
+  <figure>
+    <video src="assets/compare_sketch.mp4" autoplay loop muted playsinline preload="metadata"></video>
+    <figcaption>Sketch style — per-frame line art flickers heavily; the fixer stabilizes it.</figcaption>
+  </figure>
+
+  <figure>
+    <video src="assets/compare_popart.mp4" autoplay loop muted playsinline preload="metadata"></video>
+    <figcaption>Pop-art style.</figcaption>
+  </figure>
+
+  <footer>
+    A causal video model should not be asked to edit; it should be asked to fix.
+    &nbsp;·&nbsp; <a href="https://github.com/lixuan27/Temporal-Fixer">Code &amp; details →</a>
+  </footer>
+</div>
+</body>
+</html>
