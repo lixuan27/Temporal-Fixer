@@ -3,59 +3,119 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Temporal Fixer</title>
+<title>Temporal Fixer — reconstruction pipeline</title>
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: #0b0e14; color: #e6edf3;
-    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
-  .wrap { max-width: 940px; margin: 0 auto; padding: 64px 20px 80px; }
-  h1 { font-size: 2.2rem; font-weight: 700; margin: 0 0 6px; letter-spacing: -.02em; }
-  .tag { color: #9fb0c0; font-size: 1.05rem; margin: 0 0 4px; }
-  .tag b { color: #e6edf3; }
-  .facts { color: #7d8ea0; font-size: .92rem; margin: 14px 0 40px; }
-  .facts span { color: #3fb950; font-weight: 600; }
-  figure { margin: 0 0 34px; }
-  video {
-    width: 100%; display: block; border-radius: 10px;
-    border: 1px solid #222c3a; background: #000;
-  }
-  figcaption { color: #7d8ea0; font-size: .86rem; margin-top: 8px; }
-  a { color: #58a6ff; text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  footer { color: #59667a; font-size: .85rem; margin-top: 44px; border-top: 1px solid #1b2430; padding-top: 20px; }
+  body { margin:0; background:#0b0e14; color:#e6edf3;
+    font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:980px; margin:0 auto; padding:56px 20px 90px; }
+  h1 { font-size:2.1rem; font-weight:700; margin:0 0 4px; letter-spacing:-.02em; }
+  h2 { font-size:1.25rem; margin:44px 0 12px; border-bottom:1px solid #1b2430; padding-bottom:8px; }
+  .tag { color:#9fb0c0; font-size:1.02rem; margin:0 0 6px; }
+  .tag b { color:#e6edf3; }
+  .setup { background:#111722; border:1px solid #223; border-left:3px solid #3fb950; border-radius:8px;
+    padding:14px 18px; margin:20px 0; font-size:.94rem; }
+  .setup b { color:#3fb950; }
+  code { background:#161b26; padding:1px 6px; border-radius:4px; font-size:.86em; color:#c9d6e5; }
+  video { width:100%; display:block; border-radius:9px; border:1px solid #222c3a; background:#000; }
+  figure { margin:0 0 26px; }
+  figcaption { color:#8195a8; font-size:.85rem; margin-top:7px; }
+  table { width:100%; border-collapse:collapse; margin:14px 0; font-size:.9rem; }
+  th,td { padding:7px 10px; text-align:center; border-bottom:1px solid #1b2430; }
+  th { color:#9fb0c0; font-weight:600; } td:first-child,th:first-child { text-align:left; }
+  .good { color:#3fb950; font-weight:600; } .bad { color:#f0883e; font-weight:600; }
+  ul { padding-left:20px; } li { margin:4px 0; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  @media (max-width:720px){ .grid2 { grid-template-columns:1fr; } }
+  a { color:#58a6ff; text-decoration:none; } a:hover { text-decoration:underline; }
+  .note { color:#8195a8; font-size:.85rem; }
+  footer { color:#59667a; font-size:.85rem; margin-top:46px; border-top:1px solid #1b2430; padding-top:18px; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Temporal Fixer</h1>
-  <p class="tag"><b>Image edits, video fixes.</b> Run any image editor frame-by-frame, then remove the flicker.</p>
-  <p class="facts">
-    <span>&minus;87%</span> end-to-end flicker &nbsp;·&nbsp; zero paired edit data &nbsp;·&nbsp; single step &nbsp;·&nbsp; editor-agnostic
-  </p>
+  <p class="tag"><b>Image edits, video fixes.</b> A per-frame image editor produces a flickery draft;
+  a causal video model, trained on clean video only, fixes the temporal consistency.</p>
 
-  <figure>
-    <video src="assets/compare_ukiyoe.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption>Left: source &nbsp;·&nbsp; Middle: per-frame edit (flickers) &nbsp;·&nbsp; Right: ours (temporally fixed) — Ukiyo-e style.</figcaption>
-  </figure>
+  <div class="setup">
+    <b>Current experimental setup</b> (reconstruction pipeline) — <span class="note">updated 2026-07-13</span><br>
+    <b>im2im editor:</b> full-precision <code>Qwen-Image-Edit</code>, <b>8 denoising steps</b>,
+    <code>true_cfg_scale=1.0</code>, fresh seed per frame (the flicker source). <span class="note">The
+    target 4-step distilled model (Qwen-Image-Edit-2509 int4 + Lightning v2, nunchaku) has no H200/Hopper
+    CUDA kernel — FP8-2509 port in progress.</span><br>
+    <b>Training data:</b> clean video + its per-frame im2im <b>reconstruction</b> (no paired-edit data, no
+    synthetic degradation). <code>target = clean source</code>, <code>draft = flickery reconstruction</code>.<br>
+    <b>Fixer:</b> Wan2.1 causal DiT, conditioned <code>[draft | source]</code>, single-step, self-supervised.
+  </div>
 
-  <figure>
-    <video src="assets/compare_sketch.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption>Sketch style — per-frame line art flickers heavily; the fixer stabilizes it.</figcaption>
-  </figure>
+  <h2>1 · Per-frame im2im: input → output (the flicker)</h2>
+  <p class="note">Left = clean source (INPUT). Right = per-frame im2im OUTPUT (the flickery draft the
+  fixer must repair). Reconstruction prompts keep the content; the frame-to-frame variation is the flicker.</p>
+  <figure><video src="assets/recon_example_2.mp4" autoplay loop muted playsinline preload="metadata"></video>
+    <figcaption>Reconstruction (prompt: <i>"keep the image exactly the same"</i>) — outdoor scene. Structure preserved; details re-render per frame.</figcaption></figure>
+  <div class="grid2">
+    <figure><video src="assets/recon_example_1.mp4" autoplay loop muted playsinline preload="metadata"></video>
+      <figcaption>Reconstruction example 2.</figcaption></figure>
+    <figure><video src="assets/recon_example_3.mp4" autoplay loop muted playsinline preload="metadata"></video>
+      <figcaption>Reconstruction (prompt: <i>"very slightly enhance…"</i>).</figcaption></figure>
+  </div>
+  <div class="grid2">
+    <figure><video src="assets/edit_example_1.mp4" autoplay loop muted playsinline preload="metadata"></video>
+      <figcaption>Real <b>edit</b> draft (anime style) — for flicker comparison.</figcaption></figure>
+    <figure><video src="assets/edit_example_2.mp4" autoplay loop muted playsinline preload="metadata"></video>
+      <figcaption>Real <b>edit</b> draft (Bauhaus).</figcaption></figure>
+  </div>
 
-  <figure>
-    <video src="assets/compare_popart.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption>Pop-art style.</figcaption>
-  </figure>
+  <h2>2 · Reconstruction prompts tried</h2>
+  <ul>
+    <li><code>"Keep the image exactly the same, preserve all content, colors and structure"</code></li>
+    <li><code>"Reproduce this photo faithfully with the same appearance and details"</code></li>
+    <li><code>"Very slightly enhance sharpness and clarity, keep everything else identical"</code></li>
+  </ul>
+  <p class="note">Mild edits (color grade / overcast / vintage) used for the gap study; drastic edits
+  (anime / Bauhaus / snow / watercolor) as the real-edit test.</p>
 
-  <footer>
-    A causal video model should not be asked to edit; it should be asked to fix.
-    &nbsp;·&nbsp; <a href="https://github.com/lixuan27/Temporal-Fixer">Code &amp; details →</a>
-  </footer>
+  <h2>3 · Train–test flicker gap</h2>
+  <p>Flow-warped / raw flicker (mean |frame<sub>t+1</sub>−frame<sub>t</sub>|×100), 25 clips per set:</p>
+  <table>
+    <tr><th>draft type</th><th>flicker</th><th></th></tr>
+    <tr><td>clean source</td><td>~1.3</td><td class="note">real motion only</td></tr>
+    <tr><td><b>reconstruction</b> (what we train on)</td><td><b>7.6</b></td><td></td></tr>
+    <tr><td>mild edit (color grade, overcast…)</td><td>7.2</td><td class="good">≈ reconstruction</td></tr>
+    <tr><td>drastic edit (anime, Bauhaus…)</td><td>11.2</td><td class="note">higher</td></tr>
+  </table>
+  <p><b>→ For mild / appearance-preserving edits (the Waymo case), reconstruction reproduces the editing
+  flicker well — the flicker gap is small.</b> Larger for drastic style edits.</p>
+
+  <h2>4 · Decisive result — reconstruction fixer vs synthetic-degradation fixer</h2>
+  <p class="note">48 held-out OpenVE edit clips, VBench + flow-warped flicker + CLIP edit-preservation.</p>
+  <table>
+    <tr><th>fixer trained on</th><th>flicker ↓</th><th>motion-smooth ↑</th><th>subject-consist ↑</th><th>edit preserved ↑</th><th>imaging-Q</th></tr>
+    <tr><td>synthetic degradation</td><td>6.13</td><td>0.979</td><td>0.918</td><td class="good">0.959</td><td>0.565</td></tr>
+    <tr><td><b>real reconstruction</b></td><td class="good">2.04</td><td class="good">0.995</td><td class="good">0.969</td><td class="bad">0.742</td><td>0.469</td></tr>
+  </table>
+  <p>The reconstruction fixer <b>deflickers dramatically better (−67%, near a dedicated editor)</b> — but
+  it partially <b>undoes the edit</b> (CLIP 0.959→0.742). Cause: the 8-step editor re-renders the content
+  (draft ≠ source), so with <code>target = source</code> the fixer learns to <i>reconstruct the source</i>
+  and reverts the edit at test. <b>This pins down exactly why the structure-EXACT 4-step distilled editor
+  is needed</b>: when draft ≈ source (only temporal jitter differs), <code>target = source</code> teaches
+  pure deflickering instead of edit-reversion.</p>
+  <figure><img src="assets/fig_synthetic_vs_real_gap.png" style="width:100%;border-radius:9px;border:1px solid #222c3a">
+    <figcaption>Left→right: clean source · synthetic training-degradation (mild) · real per-frame im2im (re-renders).</figcaption></figure>
+
+  <h2>5 · Fixes in progress</h2>
+  <ul>
+    <li><b>Root cause:</b> FP8-2509 (Hopper-native) → the true structure-EXACT 4-step distilled editor →
+      low-drift reconstruction → retrain (expect strong deflicker <i>and</i> preserved edit).</li>
+    <li><b>Training-side:</b> stronger draft-appearance anchor to resist reversion.</li>
+    <li><b>Domain:</b> switched training data from faces → outdoor/nature scenes; Waymo driving data next.</li>
+  </ul>
+
+  <footer>Temporal Fixer · reconstruction pipeline · research status. Prompts / model / videos / metrics
+  above. <a href="https://github.com/lixuan27/Temporal-Fixer">repository</a></footer>
 </div>
 </body>
 </html>
