@@ -42,32 +42,33 @@
 
   <div class="setup">
     <b>Current experimental setup</b> (reconstruction pipeline) — <span class="note">updated 2026-07-13</span><br>
-    <b>im2im editor:</b> full-precision <code>Qwen-Image-Edit</code>, <b>8 denoising steps</b>,
-    <code>true_cfg_scale=1.0</code>, fresh seed per frame (the flicker source). <span class="note">The
-    target 4-step distilled model (Qwen-Image-Edit-2509 int4 + Lightning v2, nunchaku) has no H200/Hopper
-    CUDA kernel — FP8-2509 port in progress.</span><br>
+    <b>im2im editor:</b> <code>Qwen-Image-Edit</code> + <b>Lightning-v2 4-step distilled</b> LoRA,
+    <b>4 steps</b>, <code>true_cfg_scale=1.0</code>, fresh seed per frame (the flicker source).
+    <span class="note">The 4-step distillation is what keeps the reconstruction sharp & structure-preserving
+    (an 8-step non-distilled base was under-denoised / distorted). Your exact nunchaku int4 2509 build has
+    no H200/Hopper kernel — using the same Lightning distillation on full-precision weights; FP8-2509 next.</span><br>
     <b>Training data:</b> clean video + its per-frame im2im <b>reconstruction</b> (no paired-edit data, no
     synthetic degradation). <code>target = clean source</code>, <code>draft = flickery reconstruction</code>.<br>
     <b>Fixer:</b> Wan2.1 causal DiT, conditioned <code>[draft | source]</code>, single-step, self-supervised.
   </div>
 
-  <h2>1 · Per-frame im2im: input → output (the flicker)</h2>
-  <p class="note">Left = clean source (INPUT). Right = per-frame im2im OUTPUT (the flickery draft the
-  fixer must repair). Reconstruction prompts keep the content; the frame-to-frame variation is the flicker.</p>
-  <figure><video src="assets/recon_example_2.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption>Reconstruction (prompt: <i>"keep the image exactly the same"</i>) — outdoor scene. Structure preserved; details re-render per frame.</figcaption></figure>
+  <h2>1 · Per-frame im2im (4-step distilled): input → output</h2>
+  <p class="note">Left = clean source (INPUT). Right = per-frame <b>4-step distilled</b> im2im OUTPUT
+  (reconstruction prompt: <i>"keep the image exactly the same"</i>). Driving-relevant outdoor scenes —
+  <b>sharp, structure-preserving</b>; the frame-to-frame variation is the flicker the video fixer removes.</p>
+  <figure><video src="assets/clean4_1.mp4" autoplay loop muted playsinline preload="metadata"></video>
+    <figcaption>4-step distilled reconstruction — forest trail at sunset.</figcaption></figure>
   <div class="grid2">
-    <figure><video src="assets/recon_example_1.mp4" autoplay loop muted playsinline preload="metadata"></video>
-      <figcaption>Reconstruction example 2.</figcaption></figure>
-    <figure><video src="assets/recon_example_3.mp4" autoplay loop muted playsinline preload="metadata"></video>
-      <figcaption>Reconstruction (prompt: <i>"very slightly enhance…"</i>).</figcaption></figure>
+    <figure><video src="assets/clean4_4.mp4" autoplay loop muted playsinline preload="metadata"></video>
+      <figcaption>Cliffs / coastline.</figcaption></figure>
+    <figure><video src="assets/clean4_3.mp4" autoplay loop muted playsinline preload="metadata"></video>
+      <figcaption>Urban / landscape.</figcaption></figure>
   </div>
-  <div class="grid2">
-    <figure><video src="assets/edit_example_1.mp4" autoplay loop muted playsinline preload="metadata"></video>
-      <figcaption>Real <b>edit</b> draft (anime style) — for flicker comparison.</figcaption></figure>
-    <figure><video src="assets/edit_example_2.mp4" autoplay loop muted playsinline preload="metadata"></video>
-      <figcaption>Real <b>edit</b> draft (Bauhaus).</figcaption></figure>
-  </div>
+  <figure><video src="assets/clean4_2.mp4" autoplay loop muted playsinline preload="metadata"></video>
+    <figcaption>Natural wonders — low-flicker reconstruction.</figcaption></figure>
+  <p class="note">Earlier <b>8-step non-distilled</b> drafts were under-denoised and distorted — replaced
+  by these 4-step distilled reconstructions. Real edit drafts (anime / Bauhaus) for flicker comparison:
+  <a href="assets/edit_example_1.mp4">1</a> · <a href="assets/edit_example_2.mp4">2</a>.</p>
 
   <h2>2 · Reconstruction prompts tried</h2>
   <ul>
