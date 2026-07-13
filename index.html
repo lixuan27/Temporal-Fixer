@@ -37,85 +37,11 @@
 <body>
 <div class="wrap">
   <h1>Temporal Fixer</h1>
-  <p class="tag"><b>Image edits, video fixes.</b> A per-frame image editor produces a flickery draft;
-  a causal video model, trained on clean video only, fixes the temporal consistency.</p>
-
-  <div class="setup">
-    <b>Current experimental setup</b> (reconstruction pipeline) — <span class="note">updated 2026-07-13</span><br>
-    <b>im2im editor:</b> <code>Qwen-Image-Edit</code> + <b>Lightning-v2 4-step distilled</b> LoRA,
-    <b>4 steps</b>, <code>true_cfg_scale=1.0</code>, fresh seed per frame (the flicker source).
-    <span class="note">The 4-step distillation is what keeps the reconstruction sharp & structure-preserving
-    (an 8-step non-distilled base was under-denoised / distorted). Your exact nunchaku int4 2509 build has
-    no H200/Hopper kernel — using the same Lightning distillation on full-precision weights; FP8-2509 next.</span><br>
-    <b>Training data:</b> clean video + its per-frame im2im <b>reconstruction</b> (no paired-edit data, no
-    synthetic degradation). <code>target = clean source</code>, <code>draft = flickery reconstruction</code>.<br>
-    <b>Fixer:</b> Wan2.1 causal DiT, conditioned <code>[draft | source]</code>, single-step, self-supervised.
-  </div>
-
-  <h2>1 · Reconstruction training data — <span class="note">source | per-frame reconstruction</span></h2>
-  <p class="note"><b>These are the training pairs, not a result.</b> Left = clean source (the
-  <b>target</b>). Right = its per-frame <b>4-step distilled</b> im2im reconstruction (the <b>draft</b>,
-  prompt: <i>"keep the image exactly the same"</i>). <b>The right side flickers on purpose</b> — that
-  frame-to-frame variation is exactly the editing flicker the causal video fixer is trained to remove.
-  Per frame the reconstruction is faithful (structure &amp; colors preserved); the flicker is temporal.</p>
+  <h2>Reconstruction — source | per-frame reconstruction</h2>
   <figure><video src="assets/recon_valleys.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption>Harbor / boats — reconstruction flicker 1.0 (source | reconstruction).</figcaption></figure>
-  <div class="grid2">
-    <figure><video src="assets/recon_landscape.mp4" autoplay loop muted playsinline preload="metadata"></video>
-      <figcaption>Ocean waves — 4.2.</figcaption></figure>
-    <figure><video src="assets/recon_parks.mp4" autoplay loop muted playsinline preload="metadata"></video>
-      <figcaption>Palm sunset — 3.7.</figcaption></figure>
-  </div>
-  <div class="grid2">
-    <figure><video src="assets/recon_seascapes.mp4" autoplay loop muted playsinline preload="metadata"></video>
-      <figcaption>Dipper on rock — 13.8.</figcaption></figure>
-    <figure><video src="assets/recon_natural_wonders.mp4" autoplay loop muted playsinline preload="metadata"></video>
-      <figcaption>Green valley — 16.8 (foliage/haze → highest per-frame variation).</figcaption></figure>
-  </div>
-  <figure><video src="assets/recon_beaches.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption>Cliff coastline — 8.9 (more textured water → more per-frame variation).</figcaption></figure>
-  <p class="note">One-glance grid of all clips (middle frame, source | reconstruction):
-  <a href="assets/recon_contact_sheet.png">contact sheet</a>. The <b>fixer output</b>
-  (source | draft | stabilized) is the actual result — added once the fixer trained on this data converges.</p>
-
-  <h2>2 · Reconstruction prompts tried</h2>
-  <ul>
-    <li><code>"Keep the image exactly the same, preserve all content, colors and structure"</code></li>
-    <li><code>"Reproduce this photo faithfully with the same appearance and details"</code></li>
-    <li><code>"Very slightly enhance sharpness and clarity, keep everything else identical"</code></li>
-  </ul>
-  <p class="note">Mild edits (color grade / overcast / vintage) used for the gap study; drastic edits
-  (anime / Bauhaus / snow / watercolor) as the real-edit test.</p>
-
-  <h2>3 · Train–test flicker gap</h2>
-  <p>Flow-warped / raw flicker (mean |frame<sub>t+1</sub>−frame<sub>t</sub>|×100), 25 clips per set:</p>
-  <table>
-    <tr><th>draft type</th><th>flicker</th><th></th></tr>
-    <tr><td>clean source</td><td>~1.3</td><td class="note">real motion only</td></tr>
-    <tr><td><b>reconstruction</b> (what we train on)</td><td><b>7.6</b></td><td></td></tr>
-    <tr><td>mild edit (color grade, overcast…)</td><td>7.2</td><td class="good">≈ reconstruction</td></tr>
-    <tr><td>drastic edit (anime, Bauhaus…)</td><td>11.2</td><td class="note">higher</td></tr>
-  </table>
-  <p><b>→ For mild / appearance-preserving edits (the Waymo case), reconstruction reproduces the editing
-  flicker well — the flicker gap is small.</b> Larger for drastic style edits.</p>
-
-  <h2>4 · Why the editor must be structure-EXACT</h2>
-  <p>Self-supervision sets <code>target = clean source</code>. That only teaches <i>pure deflickering</i>
-  when the reconstruction stays close to the source (only temporal jitter differs). If the editor instead
-  re-renders content each frame (draft ≠ source), the same objective teaches the fixer to reconstruct the
-  source and would revert the edit at test. Hence the <b>4-step distilled, structure-preserving editor</b>:
-  it keeps every frame faithful so the fixer's only job is temporal consistency.</p>
-
-  <h2>5 · In progress</h2>
-  <ul>
-    <li><b>Fixer output:</b> training the causal fixer on the reconstruction data above; the
-      <i>source | draft | stabilized</i> result is added here once it converges.</li>
-    <li><b>Editor:</b> FP8-2509 (Hopper-native) to run the exact structure-EXACT 4-step build.</li>
-    <li><b>Domain:</b> training content moved faces → outdoor / nature / driving-relevant; Waymo next.</li>
-  </ul>
-
-  <footer>Temporal Fixer · reconstruction pipeline · research status.
-  <a href="https://github.com/lixuan27/Temporal-Fixer">repository</a></footer>
+    <figcaption>Harbor / boats.</figcaption></figure>
+  <figure><video src="assets/recon_parks.mp4" autoplay loop muted playsinline preload="metadata"></video>
+    <figcaption>Palm sunset.</figcaption></figure>
 </div>
 </body>
 </html>
