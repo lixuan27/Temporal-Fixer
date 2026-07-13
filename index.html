@@ -52,23 +52,31 @@
     <b>Fixer:</b> Wan2.1 causal DiT, conditioned <code>[draft | source]</code>, single-step, self-supervised.
   </div>
 
-  <h2>1 · Per-frame im2im (4-step distilled): input → output</h2>
-  <p class="note">Left = clean source (INPUT). Right = per-frame <b>4-step distilled</b> im2im OUTPUT
-  (reconstruction prompt: <i>"keep the image exactly the same"</i>). Driving-relevant outdoor scenes —
-  <b>sharp, structure-preserving</b>; the frame-to-frame variation is the flicker the video fixer removes.</p>
-  <figure><video src="assets/clean4_1.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption>4-step distilled reconstruction — forest trail at sunset.</figcaption></figure>
+  <h2>1 · Reconstruction training data — <span class="note">source | per-frame reconstruction</span></h2>
+  <p class="note"><b>These are the training pairs, not a result.</b> Left = clean source (the
+  <b>target</b>). Right = its per-frame <b>4-step distilled</b> im2im reconstruction (the <b>draft</b>,
+  prompt: <i>"keep the image exactly the same"</i>). <b>The right side flickers on purpose</b> — that
+  frame-to-frame variation is exactly the editing flicker the causal video fixer is trained to remove.
+  Per frame the reconstruction is faithful (structure &amp; colors preserved); the flicker is temporal.</p>
+  <figure><video src="assets/recon_valleys.mp4" autoplay loop muted playsinline preload="metadata"></video>
+    <figcaption>Harbor / boats — reconstruction flicker 1.0 (source | reconstruction).</figcaption></figure>
   <div class="grid2">
-    <figure><video src="assets/clean4_4.mp4" autoplay loop muted playsinline preload="metadata"></video>
-      <figcaption>Cliffs / coastline.</figcaption></figure>
-    <figure><video src="assets/clean4_3.mp4" autoplay loop muted playsinline preload="metadata"></video>
-      <figcaption>Urban / landscape.</figcaption></figure>
+    <figure><video src="assets/recon_landscape.mp4" autoplay loop muted playsinline preload="metadata"></video>
+      <figcaption>Ocean waves — 4.2.</figcaption></figure>
+    <figure><video src="assets/recon_parks.mp4" autoplay loop muted playsinline preload="metadata"></video>
+      <figcaption>Palm sunset — 3.7.</figcaption></figure>
   </div>
-  <figure><video src="assets/clean4_2.mp4" autoplay loop muted playsinline preload="metadata"></video>
-    <figcaption>Natural wonders — low-flicker reconstruction.</figcaption></figure>
-  <p class="note">Earlier <b>8-step non-distilled</b> drafts were under-denoised and distorted — replaced
-  by these 4-step distilled reconstructions. Real edit drafts (anime / Bauhaus) for flicker comparison:
-  <a href="assets/edit_example_1.mp4">1</a> · <a href="assets/edit_example_2.mp4">2</a>.</p>
+  <div class="grid2">
+    <figure><video src="assets/recon_seascapes.mp4" autoplay loop muted playsinline preload="metadata"></video>
+      <figcaption>Dipper on rock — 13.8.</figcaption></figure>
+    <figure><video src="assets/recon_natural_wonders.mp4" autoplay loop muted playsinline preload="metadata"></video>
+      <figcaption>Green valley — 16.8 (foliage/haze → highest per-frame variation).</figcaption></figure>
+  </div>
+  <figure><video src="assets/recon_beaches.mp4" autoplay loop muted playsinline preload="metadata"></video>
+    <figcaption>Cliff coastline — 8.9 (more textured water → more per-frame variation).</figcaption></figure>
+  <p class="note">One-glance grid of all clips (middle frame, source | reconstruction):
+  <a href="assets/recon_contact_sheet.png">contact sheet</a>. The <b>fixer output</b>
+  (source | draft | stabilized) is the actual result — added once the fixer trained on this data converges.</p>
 
   <h2>2 · Reconstruction prompts tried</h2>
   <ul>
@@ -91,32 +99,23 @@
   <p><b>→ For mild / appearance-preserving edits (the Waymo case), reconstruction reproduces the editing
   flicker well — the flicker gap is small.</b> Larger for drastic style edits.</p>
 
-  <h2>4 · Decisive result — reconstruction fixer vs synthetic-degradation fixer</h2>
-  <p class="note">48 held-out OpenVE edit clips, VBench + flow-warped flicker + CLIP edit-preservation.</p>
-  <table>
-    <tr><th>fixer trained on</th><th>flicker ↓</th><th>motion-smooth ↑</th><th>subject-consist ↑</th><th>edit preserved ↑</th><th>imaging-Q</th></tr>
-    <tr><td>synthetic degradation</td><td>6.13</td><td>0.979</td><td>0.918</td><td class="good">0.959</td><td>0.565</td></tr>
-    <tr><td><b>real reconstruction</b></td><td class="good">2.04</td><td class="good">0.995</td><td class="good">0.969</td><td class="bad">0.742</td><td>0.469</td></tr>
-  </table>
-  <p>The reconstruction fixer <b>deflickers dramatically better (−67%, near a dedicated editor)</b> — but
-  it partially <b>undoes the edit</b> (CLIP 0.959→0.742). Cause: the 8-step editor re-renders the content
-  (draft ≠ source), so with <code>target = source</code> the fixer learns to <i>reconstruct the source</i>
-  and reverts the edit at test. <b>This pins down exactly why the structure-EXACT 4-step distilled editor
-  is needed</b>: when draft ≈ source (only temporal jitter differs), <code>target = source</code> teaches
-  pure deflickering instead of edit-reversion.</p>
-  <figure><img src="assets/fig_synthetic_vs_real_gap.png" style="width:100%;border-radius:9px;border:1px solid #222c3a">
-    <figcaption>Left→right: clean source · synthetic training-degradation (mild) · real per-frame im2im (re-renders).</figcaption></figure>
+  <h2>4 · Why the editor must be structure-EXACT</h2>
+  <p>Self-supervision sets <code>target = clean source</code>. That only teaches <i>pure deflickering</i>
+  when the reconstruction stays close to the source (only temporal jitter differs). If the editor instead
+  re-renders content each frame (draft ≠ source), the same objective teaches the fixer to reconstruct the
+  source and would revert the edit at test. Hence the <b>4-step distilled, structure-preserving editor</b>:
+  it keeps every frame faithful so the fixer's only job is temporal consistency.</p>
 
-  <h2>5 · Fixes in progress</h2>
+  <h2>5 · In progress</h2>
   <ul>
-    <li><b>Root cause:</b> FP8-2509 (Hopper-native) → the true structure-EXACT 4-step distilled editor →
-      low-drift reconstruction → retrain (expect strong deflicker <i>and</i> preserved edit).</li>
-    <li><b>Training-side:</b> stronger draft-appearance anchor to resist reversion.</li>
-    <li><b>Domain:</b> switched training data from faces → outdoor/nature scenes; Waymo driving data next.</li>
+    <li><b>Fixer output:</b> training the causal fixer on the reconstruction data above; the
+      <i>source | draft | stabilized</i> result is added here once it converges.</li>
+    <li><b>Editor:</b> FP8-2509 (Hopper-native) to run the exact structure-EXACT 4-step build.</li>
+    <li><b>Domain:</b> training content moved faces → outdoor / nature / driving-relevant; Waymo next.</li>
   </ul>
 
-  <footer>Temporal Fixer · reconstruction pipeline · research status. Prompts / model / videos / metrics
-  above. <a href="https://github.com/lixuan27/Temporal-Fixer">repository</a></footer>
+  <footer>Temporal Fixer · reconstruction pipeline · research status.
+  <a href="https://github.com/lixuan27/Temporal-Fixer">repository</a></footer>
 </div>
 </body>
 </html>
