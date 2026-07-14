@@ -1,0 +1,55 @@
+<section class="slide">
+  <p class="kicker">1 · Intro — Task</p>
+  <h2>Compose a pretrained image model with a pretrained video model, and learn only the temporal residual.</h2>
+  <p class="lede">
+    Given a source video <span class="mono">X = (x₁…x_T)</span> and an edit instruction <span class="mono">p</span>, produce an edited video
+    <span class="mono">Y</span> that is (i) faithful to <span class="mono">p</span> on every frame and (ii) temporally consistent — under a
+    <strong>causal, streaming, constant-latency</strong> constraint. We do not learn this map end-to-end. We factor it.
+  </p>
+
+  <div class="cols cols-2-1 grow tight">
+    <div class="card tinted">
+      <h3>The factorization</h3>
+      <p style="margin-top:2px">
+        A frozen per-frame image editor <span class="mono">E</span> gives a draft <span class="mono">Ỹ = (E(x₁,p), …, E(x_T,p))</span>.
+        Each frame is structurally exact — every car, sign and pole stays in place — but the frames are drawn
+        <em>independently</em>, so the draft flickers.
+      </p>
+      <p>
+        The learned model <span class="mono">F</span> (the <strong>fixer</strong>) maps the flickery draft back onto the temporally
+        consistent manifold while <strong>keeping the draft's appearance</strong>:
+        <span class="mono">Y = F(Ỹ, X)</span>, causal in <span class="mono">t</span>.
+      </p>
+      <p style="margin-bottom:0">
+        The reason this is worth doing is an entropy argument:
+        <span class="mono">H(Y*|X,p) ≫ H(Y*|Ỹ,X,p)</span>. Once the image model has fixed the semantics,
+        what remains is a <strong>low-entropy, frame-to-frame residual</strong> — and that is a far easier learning problem
+        than video editing.
+      </p>
+    </div>
+
+    <div class="cols" style="gap:14px">
+      <div class="card accented">
+        <h3>What is being learned</h3>
+        <p style="margin:0">
+          A <strong>denoiser whose only noise model is temporal flicker</strong>. Not an editor. Not a smoother.
+          Content is out of scope by construction; the residual is the whole task.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Deployment constraints</h3>
+        <ul class="none" style="margin:0">
+          <li>Causal: frame <span class="mono">t</span> may not see <span class="mono">t+1</span>.</li>
+          <li>Streaming: chunk-by-chunk, constant memory at any length.</li>
+          <li>Single step: latency budget is a fraction of one chunk.</li>
+          <li>Domain: driving video (pass-through AR in vehicles).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-foot">
+    <span>Formally: learn <span class="mono">F</span> such that <span class="mono">F(Ỹ, X) ≈ argmin_Y  d_time(Y) &nbsp;s.t.&nbsp; d_appearance(Y, Ỹ) ≤ ε</span>, causally.</span>
+    <span>02</span>
+  </div>
+</section>

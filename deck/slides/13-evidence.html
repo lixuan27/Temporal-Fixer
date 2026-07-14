@@ -1,0 +1,50 @@
+<section class="slide">
+  <p class="kicker">6 · Evidence so far</p>
+  <h2>What is already established — including what we falsified ourselves.</h2>
+
+  <div class="cols cols-2-1 grow tight">
+    <div class="card" style="padding-top:14px">
+      <h3>Co-adapted system vs. the dedicated edit-supervised streaming editor <span class="tag">same 48 videos, same protocol, run by us</span></h3>
+      <table style="margin-top:8px">
+        <thead>
+          <tr><th></th><th class="num">Naive per-frame</th><th class="num">+ editor fix<br><span class="small">(zero training)</span></th><th class="num">+ matched fixer<br><span class="small">(full system)</span></th><th class="num">Competitor</th></tr>
+        </thead>
+        <tbody>
+          <tr class="hl"><td>Flicker ↓</td><td class="num">48.4</td><td class="num">9.40</td><td class="num">6.13 <span class="small">(−87%)</span></td><td class="num">—</td></tr>
+          <tr><td>Motion smoothness ↑</td><td class="num">0.830</td><td class="num">0.967</td><td class="num">0.979</td><td class="num">0.993</td></tr>
+          <tr><td>Subject consistency ↑</td><td class="num">0.669</td><td class="num">0.898</td><td class="num">0.918</td><td class="num">0.983</td></tr>
+          <tr><td><strong>Motion preserved ↑</strong></td><td class="num">—</td><td class="num">0.562</td><td class="num win">0.375</td><td class="num lose">0.25</td></tr>
+          <tr><td>Imaging quality ↑</td><td class="num">0.665</td><td class="num">0.612</td><td class="num lose">0.565</td><td class="num win">0.714</td></tr>
+          <tr><td>Edit preservation ↑</td><td class="num">—</td><td class="num">—</td><td class="num win">0.959</td><td class="num">—</td></tr>
+          <tr><td>Holistic VLM score ↑</td><td class="num">3.03</td><td class="num">3.229</td><td class="num">3.229 <span class="small">(no quality cost)</span></td><td class="num">—</td></tr>
+        </tbody>
+      </table>
+      <p class="small" style="margin:10px 0 0">Second benchmark (colour + material edits, 40 clips, never seen in training): flicker <strong>39.13 → 12.59 (−68%)</strong>, smoothness +0.103, subject consistency +0.137, holistic 2.89 → 3.25, edit preservation 0.951. <strong>The recipe transfers across editor, edit type and benchmark.</strong></p>
+    </div>
+
+    <div class="cols" style="gap:14px">
+      <div class="card good">
+        <h3>Established</h3>
+        <ul class="none" style="margin:0">
+          <li>Single step = four steps (−56.9% vs −56.1%).</li>
+          <li>Beats naive flow smoothing on flicker <em>and</em> edit preservation simultaneously.</li>
+          <li>The latent codec is not the bottleneck (round-trip 1.08 vs floor 1.05).</li>
+          <li>Zero paired edit data throughout.</li>
+        </ul>
+      </div>
+      <div class="card warn">
+        <h3>Falsified — by us</h3>
+        <ul class="none" style="margin:0">
+          <li>Structure loss, perceptual loss, 2× duration, flow-guided temporal loss, 10× capacity: <strong>all five slide along the same frontier</strong>.</li>
+          <li>The 14B "capacity gain" was reproduced exactly by a <em>zero-training pixel blend</em> of the 1.3B output.</li>
+          <li>Our own "motion-faithfulness" advantage was flicker masquerading as motion. Claim retracted.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-foot">
+    <span>The remaining gap (per-frame imaging quality) is bounded by the front-end editor — the draft itself scores 0.612. That is a system lever, not a fixer lever.</span>
+    <span>13</span>
+  </div>
+</section>

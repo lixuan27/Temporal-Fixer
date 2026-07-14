@@ -1,0 +1,38 @@
+<section class="slide">
+  <p class="kicker">1 · Intro — Insight (a) · I</p>
+  <h2>Do not ask a causal video model to edit. Ask it to fix.</h2>
+
+  <div class="cols cols-3 grow tight">
+    <div class="card">
+      <h3>Insight 1 · Re-partition the entropy</h3>
+      <p>Editing semantics belong to a model with <em>no</em> temporal state; temporal coherence belongs to a model with <em>only</em> temporal state. Splitting them turns a high-entropy generation problem into a low-entropy residual problem.</p>
+      <p class="small" style="margin-bottom:0"><strong>Inspiration.</strong> The "bad reconstruction in, clean video out" refiner pattern (a noisy 3D-Gaussian reconstruction refined by a video model) + the measured fact that a per-frame editor is <em>structure-exact but flickery</em>.</p>
+    </div>
+
+    <div class="card">
+      <h3>Insight 2 · Drift immunity is architectural, not a patch</h3>
+      <p>A per-frame editor has no recurrent state: it has frame-wise stochastic inconsistency but <strong>no accumulated drift</strong>. Every frame's draft is a fresh anchor that pulls the causal fixer back on track.</p>
+      <p class="small" style="margin-bottom:0"><strong>Inspiration.</strong> The open problem stated in the weekly meeting: positional (RoPE re-indexing) and content (attention-sink) fixes cannot repair drift that originates in the <em>editing/conditioning</em> path. We remove that path from the loop entirely.</p>
+    </div>
+
+    <div class="card accented">
+      <h3>Insight 3 · Most "editing flicker" is not editing — it is the sampling protocol</h3>
+      <p>A reconstruction probe (<em>zero</em> edit, prompt = "change nothing") flickers at <strong>26</strong> — while the natural-video floor is 1.0. Share one noise seed across frames and it drops to <strong>7.0</strong>. Apply a <em>drastic</em> style edit at that shared seed: still <strong>7.1</strong>.</p>
+      <p style="margin-bottom:0"><strong>The edit contributes almost nothing. The independent noise draw was producing the flicker.</strong></p>
+    </div>
+  </div>
+
+  <div class="card tinted" style="margin-top:16px">
+    <div class="cols cols-4" style="align-items:center">
+      <div><h3 style="margin:0">The free win</h3><p class="small" style="margin:0">Zero training. Editor-side protocol only. It beat the entire previous (editor + fixer) system.</p></div>
+      <div class="stat"><span class="v">48.4</span><span class="k">draft flicker · per-frame seeds</span></div>
+      <div class="stat"><span class="v accent">9.40</span><span class="k">draft flicker · shared seed</span></div>
+      <div class="stat"><span class="v">≈1.0</span><span class="k">natural-video floor</span></div>
+    </div>
+  </div>
+
+  <div class="slide-foot">
+    <span>Flicker = flow-warped error, RAFT flow taken on the <em>source</em>, occlusion-masked.</span>
+    <span>04</span>
+  </div>
+</section>

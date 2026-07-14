@@ -1,0 +1,41 @@
+<section class="slide">
+  <p class="kicker">1 · Intro — Challenge</p>
+  <h2>Why the standard routes stall.</h2>
+  <p class="lede">Four failure modes, each of which we have now either measured on our own runs or reproduced from the open-source competitor.</p>
+
+  <div class="cols cols-2 grow tight">
+    <div class="card">
+      <h3>End-to-end streaming editors <span class="tag">the direct competitor</span></h3>
+      <ul class="none">
+        <li><strong>Need paired edit data.</strong> It must be synthesized by a bigger model and filtered by a VLM — and bad pairs actively hurt the fine-tune.</li>
+        <li><strong>Edit-path drift.</strong> Editing lives inside the autoregressive state, so it drifts over minutes. Positional re-indexing and attention-sink tricks fix the <em>base rollout</em>, not the edit path.</li>
+        <li><strong>Smoothness bought with motion.</strong> Reproduced on our videos: motion smoothness 0.993 but dynamic degree 0.25 — a near-static video is trivially "consistent".</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Inference-time consistency &amp; naive filtering</h3>
+      <ul class="none">
+        <li><strong>Feature/flow propagation methods</strong> are non-causal (need keyframes or the whole clip) → cannot stream; the consistency prior is hand-designed.</li>
+        <li><strong>Optical-flow smoothing</strong>, measured: −43% flicker, but it blurs and it <em>erases the edit</em> (edit preservation 0.80 → 0.75). It cannot tell an intended edit from an artifact.</li>
+      </ul>
+    </div>
+
+    <div class="card warn">
+      <h3>Wall 1 · the single-sided ceiling <span class="tag">we hit it</span></h3>
+      <p style="margin-top:2px">Optimizing the fixer alone just slides along one flicker↔quality frontier. Five independent avenues, all falsified:</p>
+      <p style="margin:0" class="small"><strong>latent high-pass loss · pixel perceptual loss · 2× training duration · flow-guided temporal loss · 10× capacity (1.3B → 14B)</strong>. The apparent 14B gain was exactly reproduced by a <em>zero-training pixel blend</em> of the small model — an interpolation artifact.</p>
+    </div>
+
+    <div class="card warn">
+      <h3>Wall 2 · the self-supervision trap <span class="tag">we hit it</span></h3>
+      <p style="margin-top:2px">If the clean source is both the target <em>and</em> a conditioning input, the model learns the shortcut "copy the source" — and at test time it <strong>undoes the edit</strong>.</p>
+      <p style="margin:0" class="small">Measured: flicker 6.13 → 2.04 (looks excellent) while edit preservation collapsed 0.959 → 0.742; a night→day driving edit was reverted to night. <strong>Metrics cheered, the eye killed it.</strong></p>
+    </div>
+  </div>
+
+  <div class="slide-foot">
+    <span>Both walls are structural, not tuning problems. Slides 4–5 are the two insights that get past them.</span>
+    <span>03</span>
+  </div>
+</section>

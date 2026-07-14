@@ -1,0 +1,55 @@
+<section class="slide">
+  <p class="kicker">2 · Algorithm</p>
+  <h2>Edit-anchored rectified flow: start at the draft, not at noise.</h2>
+
+  <div class="cols cols-1-2 grow tight">
+    <div class="cols" style="gap:14px">
+      <div class="card tinted">
+        <h3>The path</h3>
+        <p style="margin:0">Standard rectified flow travels from Gaussian noise to data. We <strong>re-anchor the σ = 1 endpoint to the draft</strong>:</p>
+        <p class="mono" style="margin:10px 0 0; color:var(--ink)">
+          a &nbsp;= z̃ + σ_a · ε<br>
+          x_σ = (1−σ)·z* + σ·a<br>
+          v &nbsp;= a − z*
+        </p>
+        <p class="small" style="margin:10px 0 0">z̃ = draft latent, z* = clean target, σ_a = 0.1. The model regresses the velocity v; the clean estimate ẑ falls out in closed form.</p>
+      </div>
+      <div class="card">
+        <h3>The losses — and what each one buys</h3>
+        <ul class="none" style="margin:0">
+          <li><strong>Flow matching</strong> — the fix itself.</li>
+          <li><strong>Residual anchor</strong> <span class="mono">λ|ẑ − z̃|₁</span> — "you may change time, you may not change appearance". This is the first gate against erasing the edit.</li>
+          <li><strong>Latent high-pass</strong> — retains edges. Measured to be a <em>temporal↔quality dial</em>, not a sharpness fix; we set it deliberately, not greedily.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Why a single step is enough <span class="tag">interactive — drag σ</span></h3>
+      <p class="small" style="margin:2px 0 12px">The travel distance is short by construction, so the flow does not need to be integrated finely. Measured: K=1 removes 56.9% of flicker, K=4 removes 56.1%. Identical — so we take the cheap one.</p>
+
+      <div style="position:relative; height:78px; margin:22px 0 6px">
+        <div style="position:absolute; top:34px; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--good) 0%, var(--accent) 100%); border-radius:2px"></div>
+        <div style="position:absolute; top:24px; left:0; width:2px; height:24px; background:var(--good)"></div>
+        <div style="position:absolute; top:24px; right:0; width:2px; height:24px; background:var(--accent)"></div>
+        <div data-sigma-dot style="position:absolute; top:27px; left:100%; width:18px; height:18px; margin-left:-9px; border-radius:50%; background:#fff; border:3px solid var(--ink); transition:left .08s linear"></div>
+        <div style="position:absolute; top:56px; left:0; font-size:11.5px; color:var(--good); font-weight:600">σ = 0 · clean, consistent video</div>
+        <div style="position:absolute; top:56px; right:0; font-size:11.5px; color:var(--accent); font-weight:600; text-align:right">σ = 1 · the flickery draft</div>
+      </div>
+
+      <input type="range" min="0" max="100" value="100" data-sigma aria-label="Flow position sigma">
+      <p style="margin:10px 0 0; font-size:13px"><strong>σ = <span data-sigma-out class="mono">1.00</span></strong> — <span data-sigma-note class="small"></span></p>
+
+      <div class="cols cols-3" style="margin-top:14px">
+        <div class="stat"><span class="v">33</span><span class="k">frames per training clip</span></div>
+        <div class="stat"><span class="v">2e-5</span><span class="k">learning rate, bf16 + DDP</span></div>
+        <div class="stat"><span class="v">~1000</span><span class="k">steps to saturation — longer training over-smooths</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-foot">
+    <span>Inference: encode draft → one Euler step from <span class="mono">z̃ + σ_a·ε</span> → decode. The video model never generates content; it only shortens a residual.</span>
+    <span>09</span>
+  </div>
+</section>

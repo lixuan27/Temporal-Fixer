@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Temporal Fixer — Image models edit, video models fix</title>
+  <meta name="description" content="A plan for self-supervised causal temporal fixing: a frozen per-frame image editor supplies content, a causal video model supplies time. Project plan, pipeline, stage gates and training process.">
+  <link rel="stylesheet" href="deck.css">
+</head>
+<body>
+  <div class="progress" id="progress"></div>
+  <div class="deck">
+    <div class="stage-wrap" id="stage-wrap">
+      <div class="stage" id="stage"></div>
+    </div>
+  </div>
+  <div class="chrome">
+    <button id="prev" aria-label="Previous slide">‹</button>
+    <span class="counter" id="counter">1 / 15</span>
+    <button id="next" aria-label="Next slide">›</button>
+    <span class="title" id="slide-title"></span>
+    <span>· ← → to navigate</span>
+  </div>
+  <script src="deck.js"></script>
+</body>
+</html>

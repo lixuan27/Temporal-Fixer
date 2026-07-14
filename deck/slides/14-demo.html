@@ -1,0 +1,32 @@
+<section class="slide">
+  <p class="kicker">7 · Examples</p>
+  <h2>What the frozen editor gives us — and what the fixer must repair.</h2>
+
+  <div class="cols cols-2 grow tight">
+    <figure>
+      <video src="media/waymo_edit_sbs.mp4" muted loop playsinline controls data-autoplay preload="metadata"></video>
+      <div class="panel-labels"><span>source</span><span>per-frame edit draft</span></div>
+      <figcaption><strong>The premise, on driving footage.</strong> Night → daytime pop-art, edited frame by frame with no temporal context. Every car, sign, pole and wire stays exactly in place — <strong>structure-exact</strong> — and yet the sequence flickers, because each frame was drawn independently. <em>Content is solved. Time is not.</em></figcaption>
+    </figure>
+
+    <figure>
+      <video src="media/waymo_gap_3panel.mp4" muted loop playsinline controls preload="metadata"></video>
+      <div class="panel-labels"><span>source</span><span>identity reconstruction · train</span><span>strong edit · test</span></div>
+      <figcaption><strong>The train–test gap, made visible.</strong> The middle panel is what the fixer is <em>trained</em> on — the editor reproducing the clean video, so the target is valid. The right panel is what it will <em>meet</em>. Same flicker signature, ~3.5× less amplitude — which is exactly why the amplitude is closed with calibrated jitter rather than a stronger prompt.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cols cols-2 tight" style="margin-top:14px">
+    <div class="card tinted">
+      <p class="small" style="margin:0"><strong>Why the middle panel is the whole method.</strong> It costs nothing but clean video and one pass of the frozen editor: no instruction, no synthesized edit pair, no VLM filter. Any editor can produce it, so the fixer trained on it inherits <em>editor-agnostic</em> behaviour.</p>
+    </div>
+    <div class="card warn">
+      <p class="small" style="margin:0"><strong>Watch before you read.</strong> Both an over-smoothed output and a reverted edit score <em>better</em> on flicker than a correct fix. Every checkpoint in this project is judged on video first, table second — that rule is what caught the reversion failure.</p>
+    </div>
+  </div>
+
+  <div class="slide-foot">
+    <span>Driving footage shown for the editor and the gap only; the reconstruction corpus and the benchmarks are general-domain, with driving as the target deployment domain.</span>
+    <span>14</span>
+  </div>
+</section>

@@ -1,0 +1,23 @@
+<section class="slide title-slide">
+  <p class="kicker">Video world models for real-time pass-through AR · project plan</p>
+  <h1>Image models edit.<br>Video models fix.</h1>
+  <div class="title-eq">
+    A frozen per-frame image editor supplies <strong>content</strong>; a causal video model supplies <strong>time</strong>.
+    We train the video model to do one job only — <strong>denoise temporal flicker</strong> — and we train it
+    from clean video alone, with <strong>zero paired edit data</strong>.
+  </div>
+  <div class="cols cols-4" style="margin-bottom:26px">
+    <div class="stat"><span class="v">0</span><span class="k">paired edit videos needed</span></div>
+    <div class="stat"><span class="v">1</span><span class="k">Euler step at inference</span></div>
+    <div class="stat"><span class="v">−87%</span><span class="k">end-to-end flicker (main benchmark)</span></div>
+    <div class="stat"><span class="v">O(1)</span><span class="k">memory / latency per chunk</span></div>
+  </div>
+  <div class="byline">
+    <span>Plan · pipeline · stage gates · training process</span>
+    <span>Pretrained stack: Qwen-Image-Edit (4-step) · Wan2.1 causal DiT · Self-Forcing</span>
+  </div>
+  <div class="slide-foot">
+    <span>Use ← / → or the arrows below. Slides 8–12 are the plan; 8, 10, 11 are interactive.</span>
+    <span>15 slides</span>
+  </div>
+</section>

@@ -1,0 +1,89 @@
+<section class="slide">
+  <p class="kicker">1 · Intro (c) — Architecture &amp; model composition · <span style="color:var(--muted)">click any stage</span></p>
+  <h2>One frozen image model, one trained video model, everything else off-the-shelf.</h2>
+
+  <div class="flow" data-select-group style="margin-top:8px">
+    <button class="flow-node frozen" data-target="editor">
+      <span class="n-role">Frozen · image</span>
+      <span class="n-name">Per-frame editor</span>
+      <span class="n-sub">Qwen-Image-Edit 2509<br>+ Lightning 4-step</span>
+    </button>
+    <span class="flow-arrow">→</span>
+    <button class="flow-node frozen" data-target="vae">
+      <span class="n-role">Frozen · codec</span>
+      <span class="n-name">Causal VAE + text</span>
+      <span class="n-sub">Wan-VAE (16 ch)<br>umT5 (encoded once)</span>
+    </button>
+    <span class="flow-arrow">→</span>
+    <button class="flow-node" data-target="fixer">
+      <span class="n-role">Trained · video</span>
+      <span class="n-name">Causal fixer</span>
+      <span class="n-sub">Wan2.1-T2V-1.3B causal DiT<br>init: Self-Forcing DMD</span>
+    </button>
+    <span class="flow-arrow">→</span>
+    <button class="flow-node" data-target="stream">
+      <span class="n-role">Runtime</span>
+      <span class="n-name">Streaming loop</span>
+      <span class="n-sub">rolling KV cache<br>+ RoPE re-indexing</span>
+    </button>
+    <span class="flow-arrow">→</span>
+    <button class="flow-node frozen" data-target="eval">
+      <span class="n-role">Frozen · eval</span>
+      <span class="n-name">Instruments</span>
+      <span class="n-sub">RAFT · DINOv2 · CLIP<br>VBench · VLM judge</span>
+    </button>
+  </div>
+
+  <div class="flow-detail grow">
+    <div data-panel="editor">
+      <h3>Stage A — the editor is frozen and outside the recurrence</h3>
+      <p style="margin:0">Per-frame image editing, 4-step distilled, guidance is a no-op in this pipeline (no negative prompt), <strong>the seed policy is the only effective stochasticity dial</strong>. No temporal context ⇒ it cannot drift, but it flickers. At training time it produces an <em>identity reconstruction</em> of clean video; at test time it applies the actual edit.</p>
+      <div class="kv">
+        <div><b>2.2 s / frame @720p</b>4-step distilled, full precision (H200)</div>
+        <div><b>37 s / frame</b>40-step non-distilled — 17× slower, sharpness 636 vs 542</div>
+        <div><b>Structure-exact</b>every car, sign and pole stays in place — the precondition for the whole method</div>
+      </div>
+    </div>
+    <div data-panel="vae" hidden>
+      <h3>Shared latent space — verified not to be the bottleneck</h3>
+      <p style="margin:0">33 pixel frames → 9 latent frames (block size 3), 16-channel Wan-VAE, prompt encoded once per clip with umT5. We measured the codec's own floor before trusting any latent-space result.</p>
+      <div class="kv">
+        <div><b>1.08</b>VAE round-trip flicker on clean video</div>
+        <div><b>1.05</b>natural-video floor — the codec adds essentially nothing</div>
+        <div><b>10+</b>draft flicker ⇒ ~9 units of genuine headroom for a latent-space fixer</div>
+      </div>
+    </div>
+    <div data-panel="fixer" hidden>
+      <h3>Stage B — the only trained component</h3>
+      <p style="margin:0">Conditioning is channel-concatenated into the patch embedding: 16 → 48 channels = <span class="mono">[noisy state | draft latent | source latent]</span>, new channels <strong>zero-initialized</strong> so training starts exactly at the pretrained model. The objective is edit-anchored rectified flow (slide 9). Under source-free training the source slot is filled with the draft itself.</p>
+      <div class="kv">
+        <div><b>1.3B</b>params — 14B was tried and gave no genuine gain</div>
+        <div><b>K = 1</b>single Euler step at inference (K=1 ≡ K=4, measured)</div>
+        <div><b>37 GB</b>peak VRAM per GPU at 33 frames, batch 4, bf16</div>
+      </div>
+    </div>
+    <div data-panel="stream" hidden>
+      <h3>Runtime — chunk-by-chunk, constant cost</h3>
+      <p style="margin:0">Block-causal attention with a fixed-size rolling KV cache; positions are re-indexed so they never leave the range the model was trained on ⇒ <strong>arbitrary length, training-free</strong>. Nothing is precomputed; output is written while the clip is still arriving.</p>
+      <div class="kv">
+        <div><b>O(1)</b>memory and latency per chunk, at any stream length</div>
+        <div><b>1 step</b>the fixer's marginal cost — the editor dominates the budget</div>
+        <div><b>No edit state</b>drift cannot accumulate through the edit path</div>
+      </div>
+    </div>
+    <div data-panel="eval" hidden>
+      <h3>Instruments — all frozen, all off-the-shelf, all re-run by us</h3>
+      <p style="margin:0">RAFT (flow, always computed on the <em>source</em>) · DINOv2 (style-invariant structure) · CLIP (edit preservation + on-promptness) · VBench temporal dimensions · a VLM judge for holistic quality. Competitor checkpoints are executed on <strong>our</strong> videos with <strong>our</strong> protocol.</p>
+      <div class="kv">
+        <div><b>Flicker</b>flow-warped error, occlusion-masked, floor ≈ 1.0</div>
+        <div><b>Structure</b>source-anchored DINO consistency, floor = source-vs-itself</div>
+        <div><b>Anti-reversion</b>CLIP-to-draft gate on every single run</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-foot">
+    <span>Everything in the picture is pretrained and frozen except one 1.3B causal DiT — that is the entire trained surface of this project.</span>
+    <span>08</span>
+  </div>
+</section>

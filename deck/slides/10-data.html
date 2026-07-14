@@ -1,0 +1,47 @@
+<section class="slide">
+  <p class="kicker">3 · Training-data engine · <span style="color:var(--muted)">interactive</span></p>
+  <h2>Clean video in, training pairs out. No edit data anywhere.</h2>
+
+  <div class="cols cols-1-2 grow tight">
+    <div class="cols" style="gap:14px">
+      <div class="card accented">
+        <h3>The generator</h3>
+        <p style="margin:0">For every clean clip, run the <strong>same frozen editor</strong> per-frame under an <em>appearance-preserving</em> prompt ("keep the image exactly the same"). That gives a <strong>real, structure-exact, genuinely flickery</strong> draft. Train: draft → clean clip.</p>
+        <p class="small" style="margin:8px 0 0">The flicker is produced by the deployment editor itself, so its <em>character</em> is right by construction — no synthetic corruption model to mis-specify.</p>
+      </div>
+      <div class="card warn">
+        <h3>The catch we measured</h3>
+        <p style="margin:0">Identity reconstruction flickers at <strong>2.07</strong>; the real reference edit flickers at <strong>7.37</strong>. A full 16-cell sweep (prompt × guidance × seed) shows <strong>only a stronger prompt reaches ~7–9 — and a stronger prompt changes the appearance, which invalidates "target = source".</strong></p>
+        <p class="small" style="margin:8px 0 0">Guidance is a no-op here; seed policy moves flicker only ~1.25×. So prompt/config tuning alone cannot close the gap.</p>
+      </div>
+      <div class="card good">
+        <h3>The resolution</h3>
+        <p style="margin:0">Match the <em>kind</em> of flicker with real identity reconstruction; match the <em>amount</em> with <strong>calibrated appearance-preserving jitter</strong> (dialed to ≈7.4 and moment-matched to the measured character). Then <strong>train source-free</strong>, so no shortcut back to the source exists.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Flicker: what we can produce vs. what we must handle <span class="tag">hover the bars</span></h3>
+      <p class="small" style="margin:2px 0 14px">Measured on the driving reference clip (mean |Δframe| × 100). Green = valid as a training draft (appearance preserved). Orange = invalid: the appearance itself changed.</p>
+
+      <div class="bars" data-max="16">
+        <div class="bar-row"><span class="lab">Source video (floor)</span><span class="bar-track"><span class="bar-fill" data-value="2.74"></span></span><span class="val">2.74</span></div>
+        <div class="bar-row"><span class="lab">Identity reconstruction <span class="small">· train</span></span><span class="bar-track"><span class="bar-fill g" data-value="2.07"></span></span><span class="val">2.07</span></div>
+        <div class="bar-row"><span class="lab">"Slight enhance" <span class="small">· train</span></span><span class="bar-track"><span class="bar-fill g" data-value="2.36"></span></span><span class="val">2.36</span></div>
+        <div class="bar-row"><span class="lab">+ calibrated jitter <span class="small">· the plan</span></span><span class="bar-track"><span class="bar-fill a" data-value="7.4"></span></span><span class="val">≈7.4</span></div>
+        <div class="bar-row"><span class="lab">Real reference edit <span class="small">· test</span></span><span class="bar-track"><span class="bar-fill" data-value="7.37"></span></span><span class="val">7.37</span></div>
+        <div class="bar-row"><span class="lab">Daytime recolour prompt</span><span class="bar-track"><span class="bar-fill w" data-value="9.58"></span></span><span class="val">9.58</span></div>
+        <div class="bar-row"><span class="lab">Aggressive repaint</span><span class="bar-track"><span class="bar-fill w" data-value="15.65"></span></span><span class="val">15.65</span></div>
+      </div>
+
+      <div class="card tinted" style="margin-top:14px">
+        <p class="small" style="margin:0"><strong>Character check (why this transfers).</strong> Identity reconstruction and the real edit share the same flicker signature — high-frequency share 33% vs 34%, luma fraction 0.49 vs 0.48. The aggressive repaint does not (48%, chaotic). We are matching the <em>same kind</em> of noise, then dialing its amplitude.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-foot">
+    <span>Corpus: OpenVid + Ditto clean clips (41K → 223K available) · reconstruction pairs generated in-house · driving clips being added as the target domain.</span>
+    <span>10</span>
+  </div>
+</section>

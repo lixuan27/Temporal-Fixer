@@ -1,0 +1,31 @@
+<section class="slide">
+  <p class="kicker">1 · Intro — Insight (a) · II</p>
+  <h2>The binding constraint was the system, not the module.</h2>
+
+  <div class="cols cols-2 tight grow">
+    <div class="card">
+      <h3>Insight 4 · Co-adaptation</h3>
+      <p>Once the editor is stabilized, the fixer's <em>training distribution must be re-calibrated to the new draft statistics</em>. A fixer trained for strong flicker <strong>over-corrects</strong> mild drafts: dynamic degree crushed to 0.167 (more static than the competitor we criticized), imaging quality down.</p>
+      <p>Re-matching the training degradation to the true draft statistics restored motion (0.375), restored quality to draft level, and produced the best edit preservation we have measured (0.959).</p>
+      <p style="margin-bottom:0" class="small"><strong>This is why five single-sided avenues failed.</strong> The ceiling was never in the fixer's loss — it was in the un-calibrated pair of stages.</p>
+    </div>
+
+    <div class="cols" style="gap:14px">
+      <div class="card">
+        <h3>Insight 5 · Flicker has a <em>character</em>, not just a magnitude</h3>
+        <p style="margin:0">Measured spectrum of the frame-difference signal: identity reconstruction and a real mild edit share the <strong>same signature</strong> (high-temporal-frequency share ≈33%, luma/chroma balance ≈0.48) and differ only in <strong>amplitude</strong> (≈2.1 vs ≈7.4). An aggressive repaint is a <em>different kind</em> of flicker (48% high-frequency, chaotic).</p>
+        <p class="small" style="margin:8px 0 0"><strong>Consequence for training data:</strong> match the <em>kind</em> with real reconstruction, match the <em>amount</em> with calibrated appearance-preserving jitter — never with a stronger prompt (that changes appearance and invalidates the target). See slide 10.</p>
+      </div>
+      <div class="card">
+        <h3>Insight 6 · Our own metrics were lying — so we rebuilt them</h3>
+        <p style="margin:0">We briefly believed high dynamic degree = "motion-faithful". A source-anchored, style-invariant structure metric (RAFT flow from the <em>source</em>, DINOv2 patch tokens, floor = source-vs-itself) showed our high dynamic degree was <strong>flicker masquerading as motion</strong>. We retracted our own claim.</p>
+        <p class="small" style="margin:8px 0 0"><strong>Inspiration:</strong> every deflickering number can also be produced by blurring or by reverting the edit. An instrument that cannot separate those three is not an instrument.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="slide-foot">
+    <span>Insights 3–6 are all <em>measured</em>, and two of them (4, 6) falsify earlier positions of this project.</span>
+    <span>05</span>
+  </div>
+</section>

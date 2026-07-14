@@ -1,0 +1,43 @@
+<section class="slide">
+  <p class="kicker">1 · Intro — Novelty (b)</p>
+  <h2>Position: post-edit causal temporal fixing as a task of its own.</h2>
+
+  <table style="margin-bottom:14px">
+    <thead>
+      <tr>
+        <th style="width:20%">&nbsp;</th>
+        <th>End-to-end streaming editors</th>
+        <th>Inference-time consistency</th>
+        <th>Reconstruction refiners</th>
+        <th style="color:var(--accent)">Ours</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Where editing lives</strong></td><td>inside the video model</td><td>image prior + hand-designed propagation</td><td>no editing</td><td class="win">outsourced to a frozen image editor</td></tr>
+      <tr><td><strong>Training data</strong></td><td>paired edit videos (synthesized + filtered)</td><td>none (training-free)</td><td>synthetic artifact bank</td><td class="win">clean video only — zero edit pairs</td></tr>
+      <tr><td><strong>Causal / streaming</strong></td><td>yes</td><td class="lose">no</td><td class="lose">no</td><td class="win">yes — single step, O(1) memory</td></tr>
+      <tr><td><strong>Swap the editor</strong></td><td class="lose">retrain</td><td>—</td><td>—</td><td class="win">free, no retraining</td></tr>
+      <tr><td><strong>Long-horizon drift</strong></td><td class="lose">edit-path drift unsolved</td><td>—</td><td>—</td><td class="win">no recurrent edit state → structurally immune</td></tr>
+    </tbody>
+  </table>
+
+  <div class="cols cols-3 tight grow">
+    <div class="card">
+      <h3>Architectural</h3>
+      <p style="margin:0">Channel-concat conditioning <span class="mono">[noisy state | draft | source]</span> with <strong>zero-initialized</strong> new channels, so step 0 is exactly the pretrained video model. Rectified flow whose <span class="mono">σ=1</span> endpoint is <strong>re-anchored from Gaussian noise to the draft</strong> — the path is short, so <strong>one Euler step suffices</strong> (measured: K=1 ≡ K=4).</p>
+    </div>
+    <div class="card">
+      <h3>Methodological</h3>
+      <p style="margin:0">A <strong>training-pair engine that needs no edits</strong>: clean video + its own per-frame <em>identity reconstruction</em> by the same frozen editor. Plus <strong>source-free conditioning</strong> to close the "copy the source" shortcut, and a residual anchor to the draft so the fixer may change time but not appearance.</p>
+    </div>
+    <div class="card accented">
+      <h3>Strategic — the actual contribution</h3>
+      <p style="margin:0"><strong>Co-adaptation of the two stages.</strong> Diagnose and stabilize the frozen editor's stochastic protocol <em>first</em>, then re-calibrate the fixer's training distribution to the resulting true draft statistics. This is the step that broke a ceiling five loss/scale interventions could not.</p>
+    </div>
+  </div>
+
+  <div class="slide-foot">
+    <span>Claim: this is a new, independently learnable task — not post-processing, not filtering — with an editor-agnostic, zero-paired-data recipe.</span>
+    <span>06</span>
+  </div>
+</section>

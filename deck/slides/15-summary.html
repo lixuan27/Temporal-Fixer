@@ -1,0 +1,41 @@
+<section class="slide">
+  <p class="kicker">Summary</p>
+  <h2>A composition of two pretrained models, and one low-entropy thing to learn.</h2>
+
+  <div class="cols cols-3 tight" style="margin-bottom:16px">
+    <div class="card accented">
+      <h3>The claim</h3>
+      <p style="margin:0">Streaming video editing does not need an edit-supervised video model. It needs a <strong>frozen per-frame image editor</strong> for content and a <strong>causal video model trained only to denoise temporal flicker</strong> — supervised entirely by clean video.</p>
+    </div>
+    <div class="card">
+      <h3>The mechanism that made it work</h3>
+      <p style="margin:0"><strong>Co-adaptation.</strong> Diagnose the frozen editor's stochastic protocol first (it, not the edit, was producing the flicker), then re-calibrate the fixer's training distribution to the true draft statistics. Five single-sided interventions could not do what this one did.</p>
+    </div>
+    <div class="card">
+      <h3>The boundary we will not hide</h3>
+      <p style="margin:0">Per-frame imaging quality is <strong>upper-bounded by the editor's re-render</strong>. We will improve it from the front end or state it as a limitation — we will not tune the fixer to fake it.</p>
+    </div>
+  </div>
+
+  <div class="cols cols-2 grow tight">
+    <div class="card">
+      <h3>Immediate path</h3>
+      <ul class="none" style="margin:0">
+        <li><strong>Now:</strong> source-free ablation, three arms — the gate is deflicker <em>and</em> non-reversion, judged on watched video.</li>
+        <li><strong>Next:</strong> rebuild the reconstruction corpus on driving footage; retrain the winning arm.</li>
+        <li><strong>Then:</strong> attach the rolling cache; measure the minute-scale drift curve and the per-chunk latency breakdown.</li>
+        <li><strong>Finally:</strong> the same-videos head-to-head across both benchmarks plus driving, with motion always reported next to smoothness.</li>
+      </ul>
+    </div>
+    <div class="card tinted">
+      <h3>What would make this a paper, and what would make it a negative result</h3>
+      <p style="margin:0"><strong>Paper:</strong> a temporal-consistency module that is editor-agnostic, needs no paired edit data, runs in one step, matches a dedicated streaming editor on temporal metrics <em>while preserving more motion</em>, and holds over minute-long streams.</p>
+      <p style="margin:8px 0 0"><strong>Negative result:</strong> if the source-free arms cannot deflicker without reverting the edit, then appearance-preserving temporal denoising cannot be learned from reconstruction alone — and we will report that, with the mechanism, rather than dress it up.</p>
+    </div>
+  </div>
+
+  <div class="slide-foot">
+    <span>Image models edit. Video models fix. The two must be calibrated to each other.</span>
+    <span>15</span>
+  </div>
+</section>

@@ -1,0 +1,33 @@
+<section class="slide">
+  <p class="kicker">1 · Intro — New problem &amp; new evaluation</p>
+  <h2>Three of the four instruments did not exist. We built them.</h2>
+  <p class="lede">Deflickering is trivially achievable by blurring, by freezing motion, or by reverting the edit. Any protocol that cannot separate those three from a real fix will reward the wrong model — ours included.</p>
+
+  <div class="cols cols-2 grow tight">
+    <div class="card">
+      <h3>1 · Source-anchored structural consistency <span class="tag">new metric</span></h3>
+      <p style="margin:0">Optical flow is computed on the <strong>source</strong> (never on the output, which would be contaminated by the output's own flicker), features are DINOv2 patch tokens (<strong>style-invariant</strong>, so edit magnitude does not inflate it), occlusion-masked, and the floor is calibrated by <em>source-vs-itself</em>. It is the instrument that falsified our own motion-faithfulness claim.</p>
+    </div>
+    <div class="card">
+      <h3>2 · Flicker <em>character</em> spectrum <span class="tag">new measurement</span></h3>
+      <p style="margin:0">Beyond amplitude: high-temporal-frequency share, luma/chroma energy split, edge correlation. This turns "does my training flicker match my test flicker?" — the central train/test-gap question — from an opinion into a <strong>measurable, matchable quantity</strong>.</p>
+    </div>
+    <div class="card">
+      <h3>3 · Paired reading of smoothness and motion <span class="tag">protocol correction</span></h3>
+      <p style="margin:0">Standard video benchmarks reward stasis: a barely-moving video scores near-perfect on smoothness and subject consistency. We therefore <strong>always report motion preservation alongside smoothness</strong>, and treat any smoothness win at collapsed dynamics as disqualified.</p>
+    </div>
+    <div class="card">
+      <h3>4 · Anti-reversion gate <span class="tag">mandatory</span></h3>
+      <p style="margin:0">Every run reports edit preservation (CLIP to the draft) and on-promptness (CLIP to the instruction). A flicker reduction that comes with a preservation drop is a <strong>reverted edit, not a fix</strong> — and is rejected regardless of how good the temporal numbers look. <strong>Watch the video before reading the table.</strong></p>
+    </div>
+  </div>
+
+  <div class="card tinted" style="margin-top:14px">
+    <p class="small" style="margin:0"><strong>Benchmarks.</strong> OpenVE-Bench (global style, 48 clips) · FiVE-Bench (colour + material, 40 clips) · VBench temporal dimensions · V2V-Bench (to add) · driving footage as the target domain. Baselines are re-run by us on identical videos under an identical protocol — never quoted from the competitor's own test set.</p>
+  </div>
+
+  <div class="slide-foot">
+    <span>The evaluation contribution is as load-bearing as the method: it is what makes the negative results in this project trustworthy.</span>
+    <span>07</span>
+  </div>
+</section>

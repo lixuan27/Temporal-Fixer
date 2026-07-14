@@ -1,0 +1,65 @@
+<section class="slide">
+  <p class="kicker">5 · Anticipated difficulties &amp; contingencies</p>
+  <h2>Every risk has a pre-registered fallback — and a trigger that fires it.</h2>
+
+  <table class="grow" style="margin-top:6px">
+    <thead>
+      <tr><th style="width:26%">Risk</th><th style="width:9%">Status</th><th style="width:33%">Trigger (how we detect it)</th><th>Contingency</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>The fixer reverts the edit</strong><br><span class="small">target = source ⇒ "copy the source" shortcut</span></td>
+        <td class="lose">observed</td>
+        <td>CLIP-to-draft drops below 0.93 while flicker looks excellent; visible on watched video.</td>
+        <td>Source-free conditioning (trained, not inference-only) + residual anchor to the draft. If it still reverts: styled target, so target ≠ source by construction.</td>
+      </tr>
+      <tr>
+        <td><strong>Train–test flicker gap</strong><br><span class="small">reconstruction ≈2 vs real edit ≈7.4</span></td>
+        <td class="lose">observed</td>
+        <td>Character spectrum + amplitude measured per draft type on the same clips.</td>
+        <td>Calibrated appearance-preserving jitter to the measured moments. Fallback: mix a small set of real mild-edit drafts with a warped-median pseudo-target.</td>
+      </tr>
+      <tr>
+        <td><strong>Over-correction</strong><br><span class="small">training flicker stronger than deployment flicker</span></td>
+        <td class="lose">observed</td>
+        <td>Dynamic degree collapses (0.167) and imaging quality falls below the draft.</td>
+        <td>Re-match the training degradation to the true draft statistics — this is the co-adaptation step, and it recovered motion, quality and edit preservation at once.</td>
+      </tr>
+      <tr>
+        <td><strong>Per-frame quality ceiling</strong><br><span class="small">temporal smoothing softens detail</span></td>
+        <td class="lose">bounded</td>
+        <td>Imaging quality below the competitor at matched deflicker; five interventions already falsified.</td>
+        <td>Accept and state the boundary: the ceiling is the <em>editor's</em> re-render, not the fixer. The lever is a sharper front-end editor (higher resolution, better distillation), not another loss weight.</td>
+      </tr>
+      <tr>
+        <td><strong>Quantized editor kernel unavailable</strong><br><span class="small">the reference int4 build has no Hopper kernel</span></td>
+        <td>blocked</td>
+        <td>Build fails on our GPUs; verified across several build attempts.</td>
+        <td>Substitute: the same 4-step distillation on full-precision weights — measured at 2.2 s/frame, sharpness 542 vs 636, flicker 7.80 vs 7.02. Acceptable. An FP8 Hopper-native build is being fetched in parallel.</td>
+      </tr>
+      <tr>
+        <td><strong>Domain mismatch</strong><br><span class="small">reconstruction corpus is nature/outdoor, target is driving</span></td>
+        <td>open</td>
+        <td>Metrics hold on nature but degrade on driving clips.</td>
+        <td>Rebuild the corpus on driving footage. Mitigating fact: the learned <em>operation</em> (appearance-preserving deflicker) is largely domain-agnostic, and rigid driving scenes flicker less than organic texture.</td>
+      </tr>
+      <tr>
+        <td><strong>Long-horizon drift</strong></td>
+        <td>open</td>
+        <td>Drift curve over minute-scale streams.</td>
+        <td>Rolling cache + position re-indexing; a pinned frame sink if needed. The edit path carries no recurrent state, so any residual drift is base-rollout drift.</td>
+      </tr>
+      <tr>
+        <td><strong>"It's just post-processing"</strong> <span class="small">— the reviewer's objection</span></td>
+        <td>open</td>
+        <td>—</td>
+        <td>Beat naive flow smoothing on <em>both</em> axes at once (already shown), demonstrate cross-editor and cross-benchmark generalization with no retraining, and present the drift curve. That is a task, not a filter.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="slide-foot">
+    <span>Four of the eight risks have already fired once. Each fallback listed above is the one that was actually executed or is pre-committed.</span>
+    <span>12</span>
+  </div>
+</section>
